@@ -49,10 +49,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Redirect authenticated users away from auth pages to dashboard
+  // Redirect authenticated users away from auth pages and home page to dashboard
   if (
     user &&
-    (request.nextUrl.pathname.startsWith('/login') ||
+    (request.nextUrl.pathname === '/' ||
+      request.nextUrl.pathname.startsWith('/login') ||
       request.nextUrl.pathname.startsWith('/signup'))
   ) {
     const url = request.nextUrl.clone()

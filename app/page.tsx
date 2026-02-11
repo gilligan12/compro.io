@@ -3,14 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
 export default async function HomePage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (user) {
-    redirect('/dashboard')
-  }
+  // Middleware handles redirecting authenticated users to dashboard
+  // This page is only shown to unauthenticated users
 
   return (
     <div className="min-h-screen bg-white">
