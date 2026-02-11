@@ -1,7 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { SubscriptionTier, SUBSCRIPTION_TIERS } from '@/types/subscription'
+import { Database } from '@/types/database'
 
-export async function getCurrentMonthUsage(userId: string) {
+type UsageTracking = Database['public']['Tables']['usage_tracking']['Row']
+
+export async function getCurrentMonthUsage(userId: string): Promise<UsageTracking | null> {
   const supabase = await createClient()
   const now = new Date()
   const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -17,13 +20,13 @@ export async function getCurrentMonthUsage(userId: string) {
     throw error
   }
   
-  return data
+  return data as UsageTracking | null
 }
 
 export async function initializeMonthlyUsage(
   userId: string,
   tier: SubscriptionTier
-) {
+): Promise<UsageTracking> {
   const supabase = await createClient()
   const now = new Date()
   const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -44,7 +47,11 @@ export async function initializeMonthlyUsage(
     throw error
   }
   
-  return data
+  if (!data) {
+    throw new Error('Failed to initialize monthly usage')
+  }
+  
+  return data as UsageTracking
 }
 
 export async function incrementSearchUsage(userId: string) {
