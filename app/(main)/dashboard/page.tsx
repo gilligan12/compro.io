@@ -20,14 +20,17 @@ export default async function DashboardPage() {
   }
 
   // Get user profile
-  let { data: profileData } = await supabase
+  let profileData: Profile | null = null
+  const { data: existingProfile } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single()
 
-  // Create profile if it doesn't exist
-  if (!profileData) {
+  if (existingProfile) {
+    profileData = existingProfile as Profile
+  } else {
+    // Create profile if it doesn't exist
     const { data: newProfile } = await (supabase
       .from('profiles') as any)
       .insert({
@@ -43,10 +46,14 @@ export default async function DashboardPage() {
       redirect('/')
     }
     
-    profileData = newProfile as Profile
+    profileData = newProfile as unknown as Profile
   }
 
-  const profile = profileData as Profile
+  if (!profileData) {
+    redirect('/')
+  }
+
+  const profile = profileData
 
   // Get or initialize usage
   let usage = await getCurrentMonthUsage(user.id)
