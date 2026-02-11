@@ -20,14 +20,30 @@ export default async function DashboardPage() {
   }
 
   // Get user profile
-  const { data: profileData } = await supabase
+  let { data: profileData } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single()
 
+  // Create profile if it doesn't exist
   if (!profileData) {
-    redirect('/')
+    const { data: newProfile } = await (supabase
+      .from('profiles') as any)
+      .insert({
+        id: user.id,
+        email: user.email!,
+        subscription_tier: 'free',
+        subscription_status: 'active',
+      })
+      .select()
+      .single()
+    
+    if (!newProfile) {
+      redirect('/')
+    }
+    
+    profileData = newProfile
   }
 
   const profile = profileData as Profile
