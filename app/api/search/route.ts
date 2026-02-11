@@ -77,9 +77,9 @@ export async function POST(request: Request) {
     const insertData: PropertySearchInsert = {
       user_id: user.id,
       property_address: address,
-      property_data: searchResults.property,
+      property_data: searchResults.property as Record<string, unknown>,
       comparables_count: searchResults.comparables.length,
-      comparables_data: searchResults.comparables,
+      comparables_data: searchResults.comparables as Record<string, unknown>[],
     }
     
     const { data: savedSearchData, error: saveError } = await supabase
