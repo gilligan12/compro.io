@@ -13,14 +13,29 @@ interface ComparablesCardProps {
     lastSoldDate?: string
     yearBuilt?: number
     propertyType?: string
+    imageUrl?: string
+    propertyUrl?: string
   }
   distance?: number
   similarityScore?: number
 }
 
 export default function ComparablesCard({ property, distance, similarityScore }: ComparablesCardProps) {
-  return (
-    <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+  const CardContent = (
+    <>
+      {property.imageUrl && (
+        <div className="mb-4 rounded-lg overflow-hidden">
+          <img
+            src={property.imageUrl}
+            alt={property.address || 'Property image'}
+            className="w-full h-48 object-cover"
+            onError={(e) => {
+              // Hide image if it fails to load
+              e.currentTarget.style.display = 'none'
+            }}
+          />
+        </div>
+      )}
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
           <h3 className="text-lg font-semibold text-gray-900 mb-1">
@@ -119,6 +134,37 @@ export default function ComparablesCard({ property, distance, similarityScore }:
           {distance.toFixed(2)} miles away
         </p>
       )}
+      
+      {property.propertyUrl && (
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <a
+            href={property.propertyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center text-sm font-medium text-deep-green hover:text-deep-green-dark transition-colors"
+          >
+            View Property Details
+            <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        </div>
+      )}
+    </>
+  )
+
+  // Wrap in link if propertyUrl exists, otherwise just return the content
+  if (property.propertyUrl) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow">
+        {CardContent}
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+      {CardContent}
     </div>
   )
 }

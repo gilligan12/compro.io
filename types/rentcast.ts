@@ -16,6 +16,8 @@ export interface RentCastProperty {
   estimatedRent?: number
   lastSoldDate?: string
   lastSoldPrice?: number
+  imageUrl?: string
+  propertyUrl?: string
 }
 
 export interface RentCastComparable {

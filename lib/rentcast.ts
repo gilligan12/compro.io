@@ -55,6 +55,25 @@ export async function searchComparables(
     return fallback
   }
 
+  // Helper function to build property URL for subject property
+  const buildSubjectPropertyUrl = (data: any, fallbackAddress: string): string | undefined => {
+    if (data.url || data.propertyUrl || data.listingUrl || data.zillowUrl || data.redfinUrl) {
+      return data.url || data.propertyUrl || data.listingUrl || data.zillowUrl || data.redfinUrl
+    }
+    
+    const propAddress = buildAddressFromData(data, fallbackAddress)
+    if (propAddress && propAddress !== fallbackAddress) {
+      const encodedAddress = encodeURIComponent(propAddress)
+      return `https://www.zillow.com/homes/${encodedAddress}`
+    }
+    
+    if (data.latitude && data.longitude) {
+      return `https://www.google.com/maps?q=${data.latitude},${data.longitude}`
+    }
+    
+    return undefined
+  }
+
   // Extract property info and comparables from the value estimate response
   // The response structure may vary, so we'll adapt based on actual API response
   const property = {
@@ -75,6 +94,15 @@ export async function searchComparables(
     estimatedRent: valueData.rent || valueData.estimatedRent,
     lastSoldDate: valueData.lastSoldDate || valueData.soldDate || valueData.saleDate || valueData.dateSold || valueData.transactionDate || valueData.closingDate,
     lastSoldPrice: valueData.lastSoldPrice || valueData.salePrice || valueData.price || valueData.soldPrice,
+    imageUrl: (() => {
+      let imgUrl = valueData.imageUrl || valueData.image || valueData.photo || valueData.photoUrl || valueData.thumbnail || valueData.thumbnailUrl || valueData.picture || valueData.pictureUrl || valueData.primaryImage || valueData.primaryImageUrl
+      // Fallback to Google Street View if no image provided and we have coordinates
+      if (!imgUrl && valueData.latitude && valueData.longitude) {
+        imgUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${valueData.latitude},${valueData.longitude}&fov=90&heading=235&pitch=10&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}`
+      }
+      return imgUrl
+    })(),
+    propertyUrl: buildSubjectPropertyUrl(valueData, address),
   }
   
   // Helper function to construct full address from components
@@ -99,6 +127,30 @@ export async function searchComparables(
     return parts.length > 0 ? parts.join(', ') : ''
   }
 
+  // Helper function to build property URL (Zillow, Redfin, etc.)
+  const buildPropertyUrl = (comp: any): string | undefined => {
+    // Check if API provides a direct link
+    if (comp.url || comp.propertyUrl || comp.listingUrl || comp.zillowUrl || comp.redfinUrl) {
+      return comp.url || comp.propertyUrl || comp.listingUrl || comp.zillowUrl || comp.redfinUrl
+    }
+    
+    // Build Zillow URL from address if we have address components
+    if (comp.address || (comp.streetAddress && comp.city && comp.state)) {
+      const address = comp.address || buildAddress(comp)
+      if (address) {
+        const encodedAddress = encodeURIComponent(address)
+        return `https://www.zillow.com/homes/${encodedAddress}`
+      }
+    }
+    
+    // Build Google Maps URL as fallback
+    if (comp.latitude && comp.longitude) {
+      return `https://www.google.com/maps?q=${comp.latitude},${comp.longitude}`
+    }
+    
+    return undefined
+  }
+
   // Extract comparables from the response
   // The API may return comparables in different formats
   // Filter to only include properties that have been sold (have sale price data)
@@ -106,6 +158,14 @@ export async function searchComparables(
     const salePrice = comp.lastSoldPrice || comp.salePrice || comp.price || comp.soldPrice
     // Extract sale date from various possible field names
     const saleDate = comp.lastSoldDate || comp.soldDate || comp.saleDate || comp.dateSold || comp.transactionDate || comp.closingDate
+    // Extract image URL from various possible field names
+    let imageUrl = comp.imageUrl || comp.image || comp.photo || comp.photoUrl || comp.thumbnail || comp.thumbnailUrl || comp.picture || comp.pictureUrl || comp.primaryImage || comp.primaryImageUrl
+    
+    // Fallback to Google Street View if no image provided and we have coordinates
+    if (!imageUrl && comp.latitude && comp.longitude) {
+      imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${comp.latitude},${comp.longitude}&fov=90&heading=235&pitch=10&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}`
+    }
+    
     return {
       property: {
         id: comp.id || comp.propertyId || '',
@@ -125,6 +185,8 @@ export async function searchComparables(
         estimatedRent: comp.rent || comp.estimatedRent,
         lastSoldDate: saleDate,
         lastSoldPrice: salePrice,
+        imageUrl: imageUrl,
+        propertyUrl: buildPropertyUrl(comp),
       },
       distance: comp.distance,
       similarityScore: comp.similarityScore || comp.score,
