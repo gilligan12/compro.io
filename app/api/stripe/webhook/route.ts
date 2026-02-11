@@ -73,7 +73,7 @@ export async function POST(request: Request) {
             user_id: userId,
             event_type: 'created',
             stripe_event_id: event.id,
-            event_data: event.data.object,
+            event_data: event.data.object as unknown as Record<string, unknown>,
           }
           await (supabase.from('subscription_events') as any).insert(eventData)
         }
@@ -112,7 +112,7 @@ export async function POST(request: Request) {
             user_id: profile.id,
             event_type: 'updated',
             stripe_event_id: event.id,
-            event_data: event.data.object,
+            event_data: event.data.object as unknown as Record<string, unknown>,
           }
           await (supabase.from('subscription_events') as any).insert(updateEventData)
         }
@@ -144,7 +144,7 @@ export async function POST(request: Request) {
             user_id: profile.id,
             event_type: 'canceled',
             stripe_event_id: event.id,
-            event_data: event.data.object,
+            event_data: event.data.object as unknown as Record<string, unknown>,
           }
           await (supabase.from('subscription_events') as any).insert(cancelEventData)
         }
