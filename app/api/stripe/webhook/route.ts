@@ -58,8 +58,8 @@ export async function POST(request: Request) {
           }
 
           // Update user profile
-          await supabase
-            .from('profiles')
+          await (supabase
+            .from('profiles') as any)
             .update({
               stripe_customer_id: session.customer,
               stripe_subscription_id: subscription.id,
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
             stripe_event_id: event.id,
             event_data: event.data.object,
           }
-          await supabase.from('subscription_events').insert(eventData)
+          await (supabase.from('subscription_events') as any).insert(eventData)
         }
         break
       }
@@ -100,8 +100,8 @@ export async function POST(request: Request) {
             tier = 'premium'
           }
 
-          await supabase
-            .from('profiles')
+          await (supabase
+            .from('profiles') as any)
             .update({
               subscription_tier: tier,
               subscription_status: subscription.status === 'active' ? 'active' : 'canceled',
@@ -114,7 +114,7 @@ export async function POST(request: Request) {
             stripe_event_id: event.id,
             event_data: event.data.object,
           }
-          await supabase.from('subscription_events').insert(updateEventData)
+          await (supabase.from('subscription_events') as any).insert(updateEventData)
         }
         break
       }
@@ -132,8 +132,8 @@ export async function POST(request: Request) {
         if (profileData) {
           const profile = profileData as Profile
           
-          await supabase
-            .from('profiles')
+          await (supabase
+            .from('profiles') as any)
             .update({
               subscription_tier: 'free',
               subscription_status: 'canceled',
@@ -146,7 +146,7 @@ export async function POST(request: Request) {
             stripe_event_id: event.id,
             event_data: event.data.object,
           }
-          await supabase.from('subscription_events').insert(cancelEventData)
+          await (supabase.from('subscription_events') as any).insert(cancelEventData)
         }
         break
       }

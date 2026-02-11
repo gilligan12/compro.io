@@ -39,8 +39,8 @@ export async function initializeMonthlyUsage(
     searches_limit: limits.searchesPerMonth ?? 999999, // Use large number for unlimited
   }
   
-  const { data, error } = await supabase
-    .from('usage_tracking')
+  const { data, error } = await (supabase
+    .from('usage_tracking') as any)
     .insert(insertData)
     .select()
     .single()

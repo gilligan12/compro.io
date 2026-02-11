@@ -82,8 +82,8 @@ export async function POST(request: Request) {
       comparables_data: searchResults.comparables as unknown as Record<string, unknown>[],
     }
     
-    const { data: savedSearchData, error: saveError } = await supabase
-      .from('property_searches')
+    const { data: savedSearchData, error: saveError } = await (supabase
+      .from('property_searches') as any)
       .insert(insertData)
       .select()
       .single()
