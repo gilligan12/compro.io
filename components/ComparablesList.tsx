@@ -6,6 +6,12 @@ interface ComparablesListProps {
 }
 
 export default function ComparablesList({ property, comparables }: ComparablesListProps) {
+  // Filter to only show comparables that have been sold (have sale price data)
+  const soldComparables = comparables.filter((comp: any) => {
+    const prop = comp.property || comp
+    return prop.lastSoldPrice != null && prop.lastSoldPrice > 0
+  })
+
   return (
     <div className="space-y-6">
       {/* Main Property */}
@@ -17,13 +23,13 @@ export default function ComparablesList({ property, comparables }: ComparablesLi
       {/* Comparables */}
       <div>
         <h2 className="text-xl font-bold text-gray-900 mb-4">
-          Comparable Properties ({comparables.length})
+          Comparable Properties ({soldComparables.length})
         </h2>
         <div className="space-y-4">
-          {comparables.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No comparables found.</p>
+          {soldComparables.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">No sold comparables found.</p>
           ) : (
-            comparables.map((comp, index) => (
+            soldComparables.map((comp, index) => (
               <ComparablesCard
                 key={index}
                 property={comp.property || comp}

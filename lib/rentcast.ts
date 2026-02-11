@@ -101,29 +101,39 @@ export async function searchComparables(
 
   // Extract comparables from the response
   // The API may return comparables in different formats
-  const comparables = (valueData.comparables || valueData.comps || valueData.sales || []).slice(0, limit).map((comp: any) => ({
-    property: {
-      id: comp.id || comp.propertyId || '',
-      address: buildAddress(comp),
-      city: comp.city || '',
-      state: comp.state || '',
-      zipCode: comp.zipCode || comp.zip || comp.postalCode || '',
-      latitude: comp.latitude,
-      longitude: comp.longitude,
-      propertyType: comp.propertyType || comp.type,
-      bedrooms: comp.bedrooms || comp.beds,
-      bathrooms: comp.bathrooms || comp.baths,
-      squareFootage: comp.squareFootage || comp.sqft || comp.squareFeet,
-      lotSize: comp.lotSize || comp.lotSquareFeet,
-      yearBuilt: comp.yearBuilt || comp.year,
-      estimatedValue: comp.avm || comp.estimate || comp.value || comp.estimatedValue,
-      estimatedRent: comp.rent || comp.estimatedRent,
-      lastSoldDate: comp.lastSoldDate || comp.soldDate || comp.saleDate,
-      lastSoldPrice: comp.lastSoldPrice || comp.salePrice || comp.price || comp.soldPrice,
-    },
-    distance: comp.distance,
-    similarityScore: comp.similarityScore || comp.score,
-  }))
+  // Filter to only include properties that have been sold (have sale price data)
+  const allComparables = (valueData.comparables || valueData.comps || valueData.sales || []).map((comp: any) => {
+    const salePrice = comp.lastSoldPrice || comp.salePrice || comp.price || comp.soldPrice
+    return {
+      property: {
+        id: comp.id || comp.propertyId || '',
+        address: buildAddress(comp),
+        city: comp.city || '',
+        state: comp.state || '',
+        zipCode: comp.zipCode || comp.zip || comp.postalCode || '',
+        latitude: comp.latitude,
+        longitude: comp.longitude,
+        propertyType: comp.propertyType || comp.type,
+        bedrooms: comp.bedrooms || comp.beds,
+        bathrooms: comp.bathrooms || comp.baths,
+        squareFootage: comp.squareFootage || comp.sqft || comp.squareFeet,
+        lotSize: comp.lotSize || comp.lotSquareFeet,
+        yearBuilt: comp.yearBuilt || comp.year,
+        estimatedValue: comp.avm || comp.estimate || comp.value || comp.estimatedValue,
+        estimatedRent: comp.rent || comp.estimatedRent,
+        lastSoldDate: comp.lastSoldDate || comp.soldDate || comp.saleDate,
+        lastSoldPrice: salePrice,
+      },
+      distance: comp.distance,
+      similarityScore: comp.similarityScore || comp.score,
+    }
+  })
+  
+  // Filter to only include sold properties (those with a sale price)
+  const soldComparables = allComparables.filter((comp: any) => comp.property.lastSoldPrice != null && comp.property.lastSoldPrice > 0)
+  
+  // Limit to the requested number of comparables
+  const comparables = soldComparables.slice(0, limit)
   
   return {
     property,
