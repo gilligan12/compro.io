@@ -69,12 +69,13 @@ export async function POST(request: Request) {
             .eq('id', userId)
 
           // Log event
-          await supabase.from('subscription_events').insert({
+          const eventData: SubscriptionEventInsert = {
             user_id: userId,
             event_type: 'created',
             stripe_event_id: event.id,
             event_data: event.data.object,
-          } as SubscriptionEventInsert)
+          }
+          await supabase.from('subscription_events').insert(eventData)
         }
         break
       }
@@ -107,12 +108,13 @@ export async function POST(request: Request) {
             })
             .eq('id', profile.id)
 
-          await supabase.from('subscription_events').insert({
+          const updateEventData: SubscriptionEventInsert = {
             user_id: profile.id,
             event_type: 'updated',
             stripe_event_id: event.id,
             event_data: event.data.object,
-          } as SubscriptionEventInsert)
+          }
+          await supabase.from('subscription_events').insert(updateEventData)
         }
         break
       }
@@ -138,12 +140,13 @@ export async function POST(request: Request) {
             })
             .eq('id', profile.id)
 
-          await supabase.from('subscription_events').insert({
+          const cancelEventData: SubscriptionEventInsert = {
             user_id: profile.id,
             event_type: 'canceled',
             stripe_event_id: event.id,
             event_data: event.data.object,
-          } as SubscriptionEventInsert)
+          }
+          await supabase.from('subscription_events').insert(cancelEventData)
         }
         break
       }

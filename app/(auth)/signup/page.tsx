@@ -45,7 +45,7 @@ export default function SignupPage() {
       
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert(profileData as any)
+        .insert(profileData)
 
       if (profileError) {
         console.error('Error creating profile:', profileError)

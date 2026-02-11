@@ -7,6 +7,7 @@ import { Database } from '@/types/database'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 type PropertySearch = Database['public']['Tables']['property_searches']['Row']
+type PropertySearchInsert = Database['public']['Tables']['property_searches']['Insert']
 
 export async function POST(request: Request) {
   try {
@@ -73,15 +74,17 @@ export async function POST(request: Request) {
     const searchResults = await searchComparables(address, comparablesLimit)
 
     // Save search to database
+    const insertData: PropertySearchInsert = {
+      user_id: user.id,
+      property_address: address,
+      property_data: searchResults.property,
+      comparables_count: searchResults.comparables.length,
+      comparables_data: searchResults.comparables,
+    }
+    
     const { data: savedSearchData, error: saveError } = await supabase
       .from('property_searches')
-      .insert({
-        user_id: user.id,
-        property_address: address,
-        property_data: searchResults.property,
-        comparables_count: searchResults.comparables.length,
-        comparables_data: searchResults.comparables,
-      })
+      .insert(insertData)
       .select()
       .single()
 
