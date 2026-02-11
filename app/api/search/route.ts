@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { searchComparables } from '@/lib/rentcast'
 import { getCurrentMonthUsage, initializeMonthlyUsage, incrementSearchUsage } from '@/lib/usage'
 import { canPerformSearch, getComparablesLimit } from '@/lib/subscription'
+import { Database } from '@/types/database'
+
+type Profile = Database['public']['Tables']['profiles']['Row']
 
 export async function POST(request: Request) {
   try {
@@ -28,18 +31,20 @@ export async function POST(request: Request) {
     }
 
     // Get user profile
-    const { data: profile } = await supabase
+    const { data: profileData } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single()
 
-    if (!profile) {
+    if (!profileData) {
       return NextResponse.json(
         { error: 'Profile not found' },
         { status: 404 }
       )
     }
+
+    const profile = profileData as Profile
 
     // Check usage limits
     let usage = await getCurrentMonthUsage(user.id)

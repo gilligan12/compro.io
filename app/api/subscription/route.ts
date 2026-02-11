@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { Database } from '@/types/database'
+
+type Profile = Database['public']['Tables']['profiles']['Row']
 
 export async function GET() {
   try {
@@ -15,18 +18,20 @@ export async function GET() {
       )
     }
 
-    const { data: profile } = await supabase
+    const { data: profileData } = await supabase
       .from('profiles')
       .select('subscription_tier, subscription_status, stripe_customer_id')
       .eq('id', user.id)
       .single()
 
-    if (!profile) {
+    if (!profileData) {
       return NextResponse.json(
         { error: 'Profile not found' },
         { status: 404 }
       )
     }
+
+    const profile = profileData as Profile
 
     return NextResponse.json({
       subscription: {

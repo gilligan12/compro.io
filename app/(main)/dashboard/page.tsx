@@ -5,6 +5,9 @@ import UsageMeter from '@/components/UsageMeter'
 import Link from 'next/link'
 import { getCurrentMonthUsage, initializeMonthlyUsage } from '@/lib/usage'
 import { getSubscriptionLimits } from '@/lib/subscription'
+import { Database } from '@/types/database'
+
+type Profile = Database['public']['Tables']['profiles']['Row']
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -17,15 +20,17 @@ export default async function DashboardPage() {
   }
 
   // Get user profile
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single()
 
-  if (!profile) {
+  if (!profileData) {
     redirect('/')
   }
+
+  const profile = profileData as Profile
 
   // Get or initialize usage
   let usage = await getCurrentMonthUsage(user.id)
