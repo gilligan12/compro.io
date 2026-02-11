@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       profileData = existingProfile as Profile
     } else {
       // Create profile if it doesn't exist
-      const { data: newProfile } = await (supabase
+      const { data: newProfile, error: insertError } = await (supabase
         .from('profiles') as any)
         .insert({
           id: user.id,
@@ -55,9 +55,10 @@ export async function POST(request: Request) {
         .select()
         .single()
       
-      if (!newProfile) {
+      if (insertError || !newProfile) {
+        console.error('Error creating profile:', insertError)
         return NextResponse.json(
-          { error: 'Failed to create profile' },
+          { error: insertError?.message || 'Failed to create profile. Please ensure RLS policies allow INSERT.' },
           { status: 500 }
         )
       }
