@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { searchComparables } from '@/lib/rentcast'
-import { getCurrentMonthUsage, initializeMonthlyUsage, incrementSearchUsage } from '@/lib/usage'
-import { canPerformSearch, getComparablesLimit } from '@/lib/subscription'
+import { getCurrentMonthUsage, initializeMonthlyUsage, incrementSearchUsage, getComparablesLimit } from '@/lib/usage'
+import { canPerformSearch } from '@/lib/subscription'
 import { Database } from '@/types/database'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
@@ -51,24 +51,23 @@ export async function POST(request: Request) {
     // Check usage limits
     let usage = await getCurrentMonthUsage(user.id)
     if (!usage) {
-      usage = await initializeMonthlyUsage(user.id, profile.subscription_tier)
+      usage = await initializeMonthlyUsage(user.id)
     }
 
     const canSearch = canPerformSearch(
-      profile.subscription_tier,
       usage.searches_used,
       usage.searches_limit
     )
 
     if (!canSearch) {
       return NextResponse.json(
-        { error: 'Monthly search limit reached. Please upgrade your plan.' },
+        { error: 'Monthly search limit reached. You have used all 5 free searches this month.' },
         { status: 403 }
       )
     }
 
-    // Get comparables limit for tier
-    const comparablesLimit = getComparablesLimit(profile.subscription_tier)
+    // Get comparables limit
+    const comparablesLimit = getComparablesLimit()
 
     // Search RentCast API
     const searchResults = await searchComparables(address, comparablesLimit)

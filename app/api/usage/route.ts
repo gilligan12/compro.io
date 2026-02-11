@@ -38,14 +38,13 @@ export async function GET() {
     // Get or initialize usage
     let usage = await getCurrentMonthUsage(user.id)
     if (!usage) {
-      usage = await initializeMonthlyUsage(user.id, profile.subscription_tier)
+      usage = await initializeMonthlyUsage(user.id)
     }
 
     return NextResponse.json({
       usage: {
         searchesUsed: usage.searches_used,
         searchesLimit: usage.searches_limit,
-        tier: profile.subscription_tier,
       },
     })
   } catch (error: any) {

@@ -39,11 +39,10 @@ export async function GET() {
     // Get or initialize usage
     let usage = await getCurrentMonthUsage(user.id)
     if (!usage) {
-      usage = await initializeMonthlyUsage(user.id, profile.subscription_tier)
+      usage = await initializeMonthlyUsage(user.id)
     }
 
     const canSearch = canPerformSearch(
-      profile.subscription_tier,
       usage.searches_used,
       usage.searches_limit
     )
@@ -52,7 +51,6 @@ export async function GET() {
       canSearch,
       searchesUsed: usage.searches_used,
       searchesLimit: usage.searches_limit,
-      tier: profile.subscription_tier,
     })
   } catch (error: any) {
     console.error('Usage check error:', error)

@@ -35,7 +35,7 @@ export default async function DashboardPage() {
   // Get or initialize usage
   let usage = await getCurrentMonthUsage(user.id)
   if (!usage) {
-    usage = await initializeMonthlyUsage(user.id, profile.subscription_tier)
+    usage = await initializeMonthlyUsage(user.id)
   }
 
   // Ensure usage is defined
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
   // TypeScript guard: usage is guaranteed to be non-null after the check above
   const usageData = usage
 
-  const limits = getSubscriptionLimits(profile.subscription_tier)
+  const limits = getSubscriptionLimits()
 
   return (
     <div className="min-h-screen bg-bg-primary">
@@ -80,27 +80,6 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Subscription Status */}
-        {profile.subscription_tier === 'free' && (
-          <div className="bg-deep-green/10 border border-deep-green/20 rounded-lg p-4 mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium text-deep-green">
-                  You're on the Free plan
-                </h3>
-                <p className="text-sm text-gray-700 mt-1">
-                  Upgrade to unlock more searches and comparables per property.
-                </p>
-              </div>
-              <Link
-                href="/pricing"
-                className="ml-4 bg-deep-green hover:bg-deep-green-dark text-white px-4 py-2 rounded-md text-sm font-medium"
-              >
-                View Plans
-              </Link>
-            </div>
-          </div>
-        )}
 
         {/* Historical Searches Section */}
         <div className="bg-white rounded-lg shadow p-6">
