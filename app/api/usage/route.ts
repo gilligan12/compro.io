@@ -20,11 +20,37 @@ export async function GET() {
     }
 
     // Get user profile
-    const { data: profileData } = await supabase
+    let profileData: Profile | null = null
+    const { data: existingProfile } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single()
+
+    if (existingProfile) {
+      profileData = existingProfile as Profile
+    } else {
+      // Create profile if it doesn't exist
+      const { data: newProfile } = await (supabase
+        .from('profiles') as any)
+        .insert({
+          id: user.id,
+          email: user.email!,
+          subscription_tier: 'free',
+          subscription_status: 'active',
+        })
+        .select()
+        .single()
+      
+      if (!newProfile) {
+        return NextResponse.json(
+          { error: 'Failed to create profile' },
+          { status: 500 }
+        )
+      }
+      
+      profileData = newProfile as unknown as Profile
+    }
 
     if (!profileData) {
       return NextResponse.json(
@@ -33,7 +59,7 @@ export async function GET() {
       )
     }
 
-    const profile = profileData as Profile
+    const profile = profileData
 
     // Get or initialize usage
     let usage = await getCurrentMonthUsage(user.id)
