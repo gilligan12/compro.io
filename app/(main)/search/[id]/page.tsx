@@ -5,8 +5,9 @@ import ComparablesList from '@/components/ComparablesList'
 export default async function SearchResultsPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params
   const supabase = await createClient()
   const {
     data: { user },
@@ -19,7 +20,7 @@ export default async function SearchResultsPage({
   const { data: search, error } = await supabase
     .from('property_searches')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('user_id', user.id)
     .single()
 
