@@ -43,7 +43,7 @@ export default async function DashboardPage() {
       redirect('/')
     }
     
-    profileData = newProfile
+    profileData = newProfile as Profile
   }
 
   const profile = profileData as Profile
