@@ -12,10 +12,9 @@ export async function searchComparables(
     throw new Error('RENTCAST_API_KEY is not configured')
   }
   
-  // First, get property details using RentCast API
-  // Note: Adjust the endpoint based on actual RentCast API documentation
-  const propertyResponse = await fetch(
-    `${RENTCAST_API_BASE}/properties?address=${encodeURIComponent(address)}`,
+  // Use Value Estimate endpoint which returns property value and comparables
+  const valueResponse = await fetch(
+    `${RENTCAST_API_BASE}/avm/value?address=${encodeURIComponent(address)}&limit=${limit}`,
     {
       headers: {
         'X-Api-Key': apiKey,
@@ -24,49 +23,73 @@ export async function searchComparables(
     }
   )
   
-  if (!propertyResponse.ok) {
-    const errorText = await propertyResponse.text()
+  if (!valueResponse.ok) {
+    const errorText = await valueResponse.text()
     let error
     try {
       error = JSON.parse(errorText)
     } catch {
       error = { message: errorText || 'Unknown error' }
     }
-    throw new Error(`RentCast API error: ${error.message || propertyResponse.statusText}`)
+    throw new Error(`RentCast API error: ${error.message || valueResponse.statusText}`)
   }
   
-  const property = await propertyResponse.json()
+  const valueData = await valueResponse.json()
   
-  if (!property || !property.id) {
+  if (!valueData) {
     throw new Error('Property not found')
   }
   
-  // Then get comparables
-  const comparablesResponse = await fetch(
-    `${RENTCAST_API_BASE}/properties/${property.id}/comps?limit=${limit}`,
-    {
-      headers: {
-        'X-Api-Key': apiKey,
-        'Content-Type': 'application/json',
-      },
-    }
-  )
-  
-  if (!comparablesResponse.ok) {
-    const errorText = await comparablesResponse.text()
-    let error
-    try {
-      error = JSON.parse(errorText)
-    } catch {
-      error = { message: errorText || 'Unknown error' }
-    }
-    throw new Error(`RentCast API error: ${error.message || comparablesResponse.statusText}`)
+  // Extract property info and comparables from the value estimate response
+  // The response structure may vary, so we'll adapt based on actual API response
+  const property = {
+    id: valueData.propertyId || valueData.id || '',
+    address: valueData.address || address,
+    city: valueData.city || '',
+    state: valueData.state || '',
+    zipCode: valueData.zipCode || valueData.zip || '',
+    latitude: valueData.latitude,
+    longitude: valueData.longitude,
+    propertyType: valueData.propertyType,
+    bedrooms: valueData.bedrooms,
+    bathrooms: valueData.bathrooms,
+    squareFootage: valueData.squareFootage,
+    lotSize: valueData.lotSize,
+    yearBuilt: valueData.yearBuilt,
+    estimatedValue: valueData.avm || valueData.estimate || valueData.value,
+    estimatedRent: valueData.rent,
+    lastSoldDate: valueData.lastSoldDate,
+    lastSoldPrice: valueData.lastSoldPrice,
   }
   
-  const comparablesData = await comparablesResponse.json()
+  // Extract comparables from the response
+  // The API may return comparables in different formats
+  const comparables = (valueData.comparables || valueData.comps || valueData.sales || []).slice(0, limit).map((comp: any) => ({
+    property: {
+      id: comp.id || comp.propertyId || '',
+      address: comp.address || '',
+      city: comp.city || '',
+      state: comp.state || '',
+      zipCode: comp.zipCode || comp.zip || '',
+      latitude: comp.latitude,
+      longitude: comp.longitude,
+      propertyType: comp.propertyType,
+      bedrooms: comp.bedrooms,
+      bathrooms: comp.bathrooms,
+      squareFootage: comp.squareFootage,
+      lotSize: comp.lotSize,
+      yearBuilt: comp.yearBuilt,
+      estimatedValue: comp.avm || comp.estimate || comp.value,
+      estimatedRent: comp.rent,
+      lastSoldDate: comp.lastSoldDate,
+      lastSoldPrice: comp.lastSoldPrice || comp.salePrice,
+    },
+    distance: comp.distance,
+    similarityScore: comp.similarityScore,
+  }))
   
   return {
     property,
-    comparables: comparablesData || [],
+    comparables: comparables || [],
   }
 }
