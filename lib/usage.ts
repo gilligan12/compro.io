@@ -70,8 +70,8 @@ export async function incrementSearchUsage(userId: string) {
     // Fallback to manual update if RPC doesn't exist
     const current = await getCurrentMonthUsage(userId)
     if (current) {
-      const { error: updateError } = await supabase
-        .from('usage_tracking')
+      const { error: updateError } = await (supabase
+        .from('usage_tracking') as any)
         .update({ searches_used: current.searches_used + 1 })
         .eq('id', current.id)
       
