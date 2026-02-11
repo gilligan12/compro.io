@@ -11,7 +11,7 @@ export function canPerformSearch(
 ): boolean {
   const limits = getSubscriptionLimits(tier)
   
-  if (limits.searchesPerMonth === null) {
+  if (limits.searchesPerMonth === null || searchesLimit === null) {
     // Premium tier - unlimited searches
     return true
   }
