@@ -43,8 +43,8 @@ export default function SignupPage() {
         subscription_status: 'active',
       }
       
-      const { error: profileError } = await supabase
-        .from('profiles')
+      const { error: profileError } = await (supabase
+        .from('profiles') as any)
         .insert(profileData)
 
       if (profileError) {

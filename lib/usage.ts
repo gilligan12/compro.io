@@ -32,14 +32,16 @@ export async function initializeMonthlyUsage(
   const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
   const limits = SUBSCRIPTION_TIERS[tier]
   
+  const insertData: Database['public']['Tables']['usage_tracking']['Insert'] = {
+    user_id: userId,
+    month: firstDayOfMonth.toISOString().split('T')[0],
+    searches_used: 0,
+    searches_limit: limits.searchesPerMonth ?? 999999, // Use large number for unlimited
+  }
+  
   const { data, error } = await supabase
     .from('usage_tracking')
-    .insert({
-      user_id: userId,
-      month: firstDayOfMonth.toISOString().split('T')[0],
-      searches_used: 0,
-      searches_limit: limits.searchesPerMonth ?? 999999, // Use large number for unlimited
-    })
+    .insert(insertData)
     .select()
     .single()
   
