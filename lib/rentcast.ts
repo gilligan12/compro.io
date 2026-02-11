@@ -94,17 +94,6 @@ export async function searchComparables(
     estimatedRent: valueData.rent || valueData.estimatedRent,
     lastSoldDate: valueData.lastSoldDate || valueData.soldDate || valueData.saleDate || valueData.dateSold || valueData.transactionDate || valueData.closingDate,
     lastSoldPrice: valueData.lastSoldPrice || valueData.salePrice || valueData.price || valueData.soldPrice,
-    imageUrl: (() => {
-      let imgUrl = valueData.imageUrl || valueData.image || valueData.photo || valueData.photoUrl || valueData.thumbnail || valueData.thumbnailUrl || valueData.picture || valueData.pictureUrl || valueData.primaryImage || valueData.primaryImageUrl
-      // Fallback to Google Street View if no image provided and we have coordinates and API key
-      if (!imgUrl && valueData.latitude && valueData.longitude) {
-        const googleMapsKey = process.env.GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-        if (googleMapsKey) {
-          imgUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${valueData.latitude},${valueData.longitude}&fov=90&heading=235&pitch=10&key=${googleMapsKey}`
-        }
-      }
-      return imgUrl || undefined
-    })(),
     propertyUrl: buildSubjectPropertyUrl(valueData, address),
   }
   
@@ -161,16 +150,6 @@ export async function searchComparables(
     const salePrice = comp.lastSoldPrice || comp.salePrice || comp.price || comp.soldPrice
     // Extract sale date from various possible field names
     const saleDate = comp.lastSoldDate || comp.soldDate || comp.saleDate || comp.dateSold || comp.transactionDate || comp.closingDate
-    // Extract image URL from various possible field names
-    let imageUrl = comp.imageUrl || comp.image || comp.photo || comp.photoUrl || comp.thumbnail || comp.thumbnailUrl || comp.picture || comp.pictureUrl || comp.primaryImage || comp.primaryImageUrl
-    
-    // Fallback to Google Street View if no image provided and we have coordinates and API key
-    if (!imageUrl && comp.latitude && comp.longitude) {
-      const googleMapsKey = process.env.GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-      if (googleMapsKey) {
-        imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${comp.latitude},${comp.longitude}&fov=90&heading=235&pitch=10&key=${googleMapsKey}`
-      }
-    }
     
     return {
       property: {
@@ -191,7 +170,6 @@ export async function searchComparables(
         estimatedRent: comp.rent || comp.estimatedRent,
         lastSoldDate: saleDate,
         lastSoldPrice: salePrice,
-        imageUrl: imageUrl,
         propertyUrl: buildPropertyUrl(comp),
       },
       distance: comp.distance,

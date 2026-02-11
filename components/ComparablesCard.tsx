@@ -13,7 +13,6 @@ interface ComparablesCardProps {
     lastSoldDate?: string
     yearBuilt?: number
     propertyType?: string
-    imageUrl?: string
     propertyUrl?: string
   }
   distance?: number
@@ -23,19 +22,6 @@ interface ComparablesCardProps {
 export default function ComparablesCard({ property, distance, similarityScore }: ComparablesCardProps) {
   const CardContent = (
     <>
-      {property.imageUrl && (
-        <div className="mb-4 rounded-lg overflow-hidden">
-          <img
-            src={property.imageUrl}
-            alt={property.address || 'Property image'}
-            className="w-full h-48 object-cover"
-            onError={(e) => {
-              // Hide image if it fails to load
-              e.currentTarget.style.display = 'none'
-            }}
-          />
-        </div>
-      )}
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
           <h3 className="text-lg font-semibold text-gray-900 mb-1">
