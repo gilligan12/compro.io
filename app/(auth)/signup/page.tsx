@@ -4,6 +4,9 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { Database } from '@/types/database'
+
+type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
 
 export default function SignupPage() {
   const router = useRouter()
@@ -33,14 +36,16 @@ export default function SignupPage() {
 
     if (authData.user) {
       // Create profile with free tier
+      const profileData: ProfileInsert = {
+        id: authData.user.id,
+        email: authData.user.email!,
+        subscription_tier: 'free',
+        subscription_status: 'active',
+      }
+      
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
-          id: authData.user.id,
-          email: authData.user.email!,
-          subscription_tier: 'free',
-          subscription_status: 'active',
-        })
+        .insert(profileData)
 
       if (profileError) {
         console.error('Error creating profile:', profileError)
