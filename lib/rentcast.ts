@@ -40,52 +40,89 @@ export async function searchComparables(
     throw new Error('Property not found')
   }
   
+  // Helper function to construct full address from components
+  const buildAddressFromData = (data: any, fallback: string): string => {
+    if (data.address) return data.address
+    if (data.formattedAddress) return data.formattedAddress
+    if (data.streetAddress || data.street) {
+      const street = data.streetAddress || data.street || ''
+      const city = data.city || ''
+      const state = data.state || ''
+      const zip = data.zipCode || data.zip || ''
+      const parts = [street, city, state, zip].filter(Boolean)
+      return parts.length > 0 ? parts.join(', ') : fallback
+    }
+    return fallback
+  }
+
   // Extract property info and comparables from the value estimate response
   // The response structure may vary, so we'll adapt based on actual API response
   const property = {
     id: valueData.propertyId || valueData.id || '',
-    address: valueData.address || address,
+    address: buildAddressFromData(valueData, address),
     city: valueData.city || '',
     state: valueData.state || '',
-    zipCode: valueData.zipCode || valueData.zip || '',
+    zipCode: valueData.zipCode || valueData.zip || valueData.postalCode || '',
     latitude: valueData.latitude,
     longitude: valueData.longitude,
-    propertyType: valueData.propertyType,
-    bedrooms: valueData.bedrooms,
-    bathrooms: valueData.bathrooms,
-    squareFootage: valueData.squareFootage,
-    lotSize: valueData.lotSize,
-    yearBuilt: valueData.yearBuilt,
-    estimatedValue: valueData.avm || valueData.estimate || valueData.value,
-    estimatedRent: valueData.rent,
-    lastSoldDate: valueData.lastSoldDate,
-    lastSoldPrice: valueData.lastSoldPrice,
+    propertyType: valueData.propertyType || valueData.type,
+    bedrooms: valueData.bedrooms || valueData.beds,
+    bathrooms: valueData.bathrooms || valueData.baths,
+    squareFootage: valueData.squareFootage || valueData.sqft || valueData.squareFeet,
+    lotSize: valueData.lotSize || valueData.lotSquareFeet,
+    yearBuilt: valueData.yearBuilt || valueData.year,
+    estimatedValue: valueData.avm || valueData.estimate || valueData.value || valueData.estimatedValue,
+    estimatedRent: valueData.rent || valueData.estimatedRent,
+    lastSoldDate: valueData.lastSoldDate || valueData.soldDate || valueData.saleDate,
+    lastSoldPrice: valueData.lastSoldPrice || valueData.salePrice || valueData.price || valueData.soldPrice,
   }
   
+  // Helper function to construct full address from components
+  const buildAddress = (comp: any): string => {
+    // Try various address field names
+    if (comp.address) return comp.address
+    if (comp.formattedAddress) return comp.formattedAddress
+    if (comp.streetAddress || comp.street) {
+      const street = comp.streetAddress || comp.street || ''
+      const city = comp.city || ''
+      const state = comp.state || ''
+      const zip = comp.zipCode || comp.zip || ''
+      return [street, city, state, zip].filter(Boolean).join(', ')
+    }
+    // Fallback: construct from components
+    const parts = [
+      comp.streetAddress || comp.street || comp.addressLine1,
+      comp.city,
+      comp.state,
+      comp.zipCode || comp.zip || comp.postalCode
+    ].filter(Boolean)
+    return parts.length > 0 ? parts.join(', ') : ''
+  }
+
   // Extract comparables from the response
   // The API may return comparables in different formats
   const comparables = (valueData.comparables || valueData.comps || valueData.sales || []).slice(0, limit).map((comp: any) => ({
     property: {
       id: comp.id || comp.propertyId || '',
-      address: comp.address || '',
+      address: buildAddress(comp),
       city: comp.city || '',
       state: comp.state || '',
-      zipCode: comp.zipCode || comp.zip || '',
+      zipCode: comp.zipCode || comp.zip || comp.postalCode || '',
       latitude: comp.latitude,
       longitude: comp.longitude,
-      propertyType: comp.propertyType,
-      bedrooms: comp.bedrooms,
-      bathrooms: comp.bathrooms,
-      squareFootage: comp.squareFootage,
-      lotSize: comp.lotSize,
-      yearBuilt: comp.yearBuilt,
-      estimatedValue: comp.avm || comp.estimate || comp.value,
-      estimatedRent: comp.rent,
-      lastSoldDate: comp.lastSoldDate,
-      lastSoldPrice: comp.lastSoldPrice || comp.salePrice,
+      propertyType: comp.propertyType || comp.type,
+      bedrooms: comp.bedrooms || comp.beds,
+      bathrooms: comp.bathrooms || comp.baths,
+      squareFootage: comp.squareFootage || comp.sqft || comp.squareFeet,
+      lotSize: comp.lotSize || comp.lotSquareFeet,
+      yearBuilt: comp.yearBuilt || comp.year,
+      estimatedValue: comp.avm || comp.estimate || comp.value || comp.estimatedValue,
+      estimatedRent: comp.rent || comp.estimatedRent,
+      lastSoldDate: comp.lastSoldDate || comp.soldDate || comp.saleDate,
+      lastSoldPrice: comp.lastSoldPrice || comp.salePrice || comp.price || comp.soldPrice,
     },
     distance: comp.distance,
-    similarityScore: comp.similarityScore,
+    similarityScore: comp.similarityScore || comp.score,
   }))
   
   return {

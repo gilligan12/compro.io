@@ -9,6 +9,8 @@ interface ComparablesCardProps {
     squareFootage?: number
     estimatedValue?: number
     estimatedRent?: number
+    lastSoldPrice?: number
+    lastSoldDate?: string
     yearBuilt?: number
     propertyType?: string
   }
@@ -64,9 +66,22 @@ export default function ComparablesCard({ property, distance, similarityScore }:
         )}
       </div>
 
-      {(property.estimatedValue || property.estimatedRent) && (
+      {(property.estimatedValue || property.estimatedRent || property.lastSoldPrice) && (
         <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap">
+            {property.lastSoldPrice && (
+              <div>
+                <p className="text-xs text-gray-500">Sale Price</p>
+                <p className="text-lg font-semibold text-gray-900">
+                  ${property.lastSoldPrice.toLocaleString()}
+                </p>
+                {property.lastSoldDate && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Sold: {new Date(property.lastSoldDate).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+            )}
             {property.estimatedValue && (
               <div>
                 <p className="text-xs text-gray-500">Estimated Value</p>
