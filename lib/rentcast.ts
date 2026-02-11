@@ -73,7 +73,7 @@ export async function searchComparables(
     yearBuilt: valueData.yearBuilt || valueData.year,
     estimatedValue: valueData.avm || valueData.estimate || valueData.value || valueData.estimatedValue,
     estimatedRent: valueData.rent || valueData.estimatedRent,
-    lastSoldDate: valueData.lastSoldDate || valueData.soldDate || valueData.saleDate,
+    lastSoldDate: valueData.lastSoldDate || valueData.soldDate || valueData.saleDate || valueData.dateSold || valueData.transactionDate || valueData.closingDate,
     lastSoldPrice: valueData.lastSoldPrice || valueData.salePrice || valueData.price || valueData.soldPrice,
   }
   
@@ -104,6 +104,8 @@ export async function searchComparables(
   // Filter to only include properties that have been sold (have sale price data)
   const allComparables = (valueData.comparables || valueData.comps || valueData.sales || []).map((comp: any) => {
     const salePrice = comp.lastSoldPrice || comp.salePrice || comp.price || comp.soldPrice
+    // Extract sale date from various possible field names
+    const saleDate = comp.lastSoldDate || comp.soldDate || comp.saleDate || comp.dateSold || comp.transactionDate || comp.closingDate
     return {
       property: {
         id: comp.id || comp.propertyId || '',
@@ -121,7 +123,7 @@ export async function searchComparables(
         yearBuilt: comp.yearBuilt || comp.year,
         estimatedValue: comp.avm || comp.estimate || comp.value || comp.estimatedValue,
         estimatedRent: comp.rent || comp.estimatedRent,
-        lastSoldDate: comp.lastSoldDate || comp.soldDate || comp.saleDate,
+        lastSoldDate: saleDate,
         lastSoldPrice: salePrice,
       },
       distance: comp.distance,

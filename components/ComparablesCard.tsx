@@ -64,6 +64,14 @@ export default function ComparablesCard({ property, distance, similarityScore }:
             <p className="text-sm font-medium text-gray-900">{property.yearBuilt}</p>
           </div>
         )}
+        {property.lastSoldDate && (
+          <div>
+            <p className="text-xs text-gray-500">Sale Date</p>
+            <p className="text-sm font-medium text-gray-900">
+              {new Date(property.lastSoldDate).toLocaleDateString()}
+            </p>
+          </div>
+        )}
       </div>
 
       {(property.estimatedValue || property.estimatedRent || property.lastSoldPrice) && (
@@ -76,8 +84,12 @@ export default function ComparablesCard({ property, distance, similarityScore }:
                   ${property.lastSoldPrice.toLocaleString()}
                 </p>
                 {property.lastSoldDate && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Sold: {new Date(property.lastSoldDate).toLocaleDateString()}
+                  <p className="text-sm text-gray-600 mt-1">
+                    Sold: {new Date(property.lastSoldDate).toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
                   </p>
                 )}
               </div>
