@@ -135,8 +135,15 @@ export async function POST(request: Request) {
     })
   } catch (error: any) {
     console.error('Search error:', error)
+    
+    // Provide helpful error message for RentCast API issues
+    let errorMessage = error.message || 'An error occurred during search'
+    if (errorMessage.includes('not associated with an active API subscription')) {
+      errorMessage = 'RentCast API subscription is not active. Please activate your subscription at https://app.rentcast.io/app/api'
+    }
+    
     return NextResponse.json(
-      { error: error.message || 'An error occurred during search' },
+      { error: errorMessage },
       { status: 500 }
     )
   }
