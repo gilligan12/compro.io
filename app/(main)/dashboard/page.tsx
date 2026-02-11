@@ -38,6 +38,14 @@ export default async function DashboardPage() {
     usage = await initializeMonthlyUsage(user.id, profile.subscription_tier)
   }
 
+  // Ensure usage is defined
+  if (!usage) {
+    redirect('/')
+  }
+
+  // TypeScript guard: usage is guaranteed to be non-null after the check above
+  const usageData = usage
+
   const limits = getSubscriptionLimits(profile.subscription_tier)
 
   return (
@@ -57,7 +65,7 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="md:col-span-2">
             <UsageMeter
-              used={usage.searches_used}
+              used={usageData.searches_used}
               limit={limits.searchesPerMonth}
               label="Monthly Searches"
             />
