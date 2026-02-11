@@ -25,9 +25,13 @@ npm install
 
 ## Step 3: Set Up RentCast API
 
+**IMPORTANT**: You need an **active API subscription** for RentCast. Free accounts may not have API access.
+
 1. Sign up at https://www.rentcast.io/api
-2. Get your API key from the dashboard
-3. Note: Review RentCast API documentation for the exact endpoint structure as it may differ from the implementation
+2. **Activate your API subscription** in the dashboard: https://app.rentcast.io/app/api
+   - You may need to subscribe to a paid plan to get API access
+3. Get your API key from the dashboard (make sure it's associated with an active subscription)
+4. Note: Review RentCast API documentation for the exact endpoint structure as it may differ from the implementation
 
 ## Step 4: Configure Environment Variables
 
