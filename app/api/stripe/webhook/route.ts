@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { stripe } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
+import { Database } from '@/types/database'
+
+type Profile = Database['public']['Tables']['profiles']['Row']
+type SubscriptionEventInsert = Database['public']['Tables']['subscription_events']['Insert']
 
 export async function POST(request: Request) {
   const body = await request.text()
@@ -70,7 +74,7 @@ export async function POST(request: Request) {
             event_type: 'created',
             stripe_event_id: event.id,
             event_data: event.data.object,
-          })
+          } as SubscriptionEventInsert)
         }
         break
       }
@@ -80,13 +84,14 @@ export async function POST(request: Request) {
         const customerId = subscription.customer
 
         // Find user by customer ID
-        const { data: profile } = await supabase
+        const { data: profileData } = await supabase
           .from('profiles')
           .select('*')
           .eq('stripe_customer_id', customerId)
           .single()
 
-        if (profile) {
+        if (profileData) {
+          const profile = profileData as Profile
           const priceId = subscription.items.data[0]?.price.id
           let tier: 'pro' | 'premium' = 'pro'
           
@@ -107,7 +112,7 @@ export async function POST(request: Request) {
             event_type: 'updated',
             stripe_event_id: event.id,
             event_data: event.data.object,
-          })
+          } as SubscriptionEventInsert)
         }
         break
       }
@@ -116,13 +121,15 @@ export async function POST(request: Request) {
         const subscription = event.data.object as any
         const customerId = subscription.customer
 
-        const { data: profile } = await supabase
+        const { data: profileData } = await supabase
           .from('profiles')
           .select('*')
           .eq('stripe_customer_id', customerId)
           .single()
 
-        if (profile) {
+        if (profileData) {
+          const profile = profileData as Profile
+          
           await supabase
             .from('profiles')
             .update({
@@ -136,7 +143,7 @@ export async function POST(request: Request) {
             event_type: 'canceled',
             stripe_event_id: event.id,
             event_data: event.data.object,
-          })
+          } as SubscriptionEventInsert)
         }
         break
       }

@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { Database } from '@/types/database'
+
+type PropertySearch = Database['public']['Tables']['property_searches']['Row']
 
 export async function GET() {
   try {
@@ -15,7 +18,7 @@ export async function GET() {
       )
     }
 
-    const { data: searches, error } = await supabase
+    const { data: searchesData, error } = await supabase
       .from('property_searches')
       .select('id, property_address, comparables_count, created_at')
       .eq('user_id', user.id)
@@ -30,8 +33,10 @@ export async function GET() {
       )
     }
 
+    const searches = (searchesData || []) as Partial<PropertySearch>[]
+
     return NextResponse.json({
-      searches: searches || [],
+      searches,
     })
   } catch (error: any) {
     console.error('History error:', error)

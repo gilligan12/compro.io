@@ -6,6 +6,7 @@ import { canPerformSearch, getComparablesLimit } from '@/lib/subscription'
 import { Database } from '@/types/database'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
+type PropertySearch = Database['public']['Tables']['property_searches']['Row']
 
 export async function POST(request: Request) {
   try {
@@ -72,7 +73,7 @@ export async function POST(request: Request) {
     const searchResults = await searchComparables(address, comparablesLimit)
 
     // Save search to database
-    const { data: savedSearch, error: saveError } = await supabase
+    const { data: savedSearchData, error: saveError } = await supabase
       .from('property_searches')
       .insert({
         user_id: user.id,
@@ -84,13 +85,15 @@ export async function POST(request: Request) {
       .select()
       .single()
 
-    if (saveError) {
+    if (saveError || !savedSearchData) {
       console.error('Error saving search:', saveError)
       return NextResponse.json(
         { error: 'Failed to save search' },
         { status: 500 }
       )
     }
+
+    const savedSearch = savedSearchData as PropertySearch
 
     // Increment usage
     await incrementSearchUsage(user.id)

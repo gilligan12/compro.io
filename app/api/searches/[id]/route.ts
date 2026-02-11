@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { Database } from '@/types/database'
+
+type PropertySearch = Database['public']['Tables']['property_searches']['Row']
 
 export async function GET(
   request: Request,
@@ -19,19 +22,21 @@ export async function GET(
       )
     }
 
-    const { data: search, error } = await supabase
+    const { data: searchData, error } = await supabase
       .from('property_searches')
       .select('*')
       .eq('id', id)
       .eq('user_id', user.id)
       .single()
 
-    if (error || !search) {
+    if (error || !searchData) {
       return NextResponse.json(
         { error: 'Search not found' },
         { status: 404 }
       )
     }
+
+    const search = searchData as PropertySearch
 
     return NextResponse.json({
       search,

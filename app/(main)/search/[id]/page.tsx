@@ -1,6 +1,9 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ComparablesList from '@/components/ComparablesList'
+import { Database } from '@/types/database'
+
+type PropertySearch = Database['public']['Tables']['property_searches']['Row']
 
 export default async function SearchResultsPage({
   params,
@@ -17,17 +20,18 @@ export default async function SearchResultsPage({
     notFound()
   }
 
-  const { data: search, error } = await supabase
+  const { data: searchData, error } = await supabase
     .from('property_searches')
     .select('*')
     .eq('id', id)
     .eq('user_id', user.id)
     .single()
 
-  if (error || !search) {
+  if (error || !searchData) {
     notFound()
   }
 
+  const search = searchData as PropertySearch
   const property = search.property_data as any
   const comparables = (search.comparables_data || []) as any[]
 

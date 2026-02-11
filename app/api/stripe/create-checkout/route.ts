@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createCheckoutSession } from '@/lib/stripe'
+import { Database } from '@/types/database'
+
+type Profile = Database['public']['Tables']['profiles']['Row']
 
 export async function POST(request: Request) {
   try {
@@ -26,18 +29,20 @@ export async function POST(request: Request) {
     }
 
     // Get user profile
-    const { data: profile } = await supabase
+    const { data: profileData } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single()
 
-    if (!profile) {
+    if (!profileData) {
       return NextResponse.json(
         { error: 'Profile not found' },
         { status: 404 }
       )
     }
+
+    const profile = profileData as Profile
 
     const session = await createCheckoutSession(
       profile.stripe_customer_id,
